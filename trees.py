@@ -67,6 +67,18 @@ def createTree(dataSet,labels):
         subLabels = labels[:]
         myTree[bestFeatLabel][value] = createTree(splitDataSet(dataSet, bestFeat, value),subLabels)
     return myTree
+def classify(inputTree, featLabels, testVec):
+    global classLabel
+    firstStr = inputTree.keys()[0]
+    secondDict = inputTree[firstStr]
+    featIndex = featLabels.index(firstStr)
+    for key in secondDict.keys():
+        if testVec[featIndex] == key:
+            if type(secondDict[key]).__name__ == 'dict':
+                classLabel = classify(secondDict[key], featLabels, testVec)
+            else:
+                classLabel = secondDict[key]
+    return classLabel
 select = int(input("请输入你要选择的操作："))
 if select == 1:
     myDat, labels = createDataSet()
@@ -81,3 +93,11 @@ elif select == 3:
 elif select == 4:
     myDat, labels = createDataSet()
     print(chooseBestFeatureToSplit(myDat))
+elif select == 5:
+    myDat, labels = createDataSet()
+    print(createTree(myDat, labels))
+elif select == 6:
+    myDat, labels = createDataSet()
+    myTree = {'no surfacing': {0: 'no', 1: {'flippers': {0: 'no', 1: 'yes'}}}}
+    print(classify(myTree, labels, [1,0]))
+    print(classify(myTree, labels, [1,1]))
