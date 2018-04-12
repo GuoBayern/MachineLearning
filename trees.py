@@ -14,7 +14,7 @@ def calcShannonEnt(dataSet):
         shannonEnt -= prob * math.log(prob,2)   #计算香农熵
     return shannonEnt
 def createDataSet():
-    dataSet = [[1,1,'yes'],[1,1,'yes'],[1,0,'no'],[0,1,'no'],[0,1,'no']]
+    dataSet = [[1,1,'yes'],[1,1,'yes'],[0,0,'no'],[1,0,'no'],[0,0,'no']]
     labels = ['no surfacing','flippers']
     return dataSet, labels
 def splitDataSet(dataSet, axis, value): #按照特征划分数据集后，每一次决策完成返回的数据将会去掉这一次决策的特征值
@@ -67,18 +67,22 @@ def createTree(dataSet,labels):
         subLabels = labels[:]
         myTree[bestFeatLabel][value] = createTree(splitDataSet(dataSet, bestFeat, value),subLabels)
     return myTree
-def classify(inputTree, featLabels, testVec):
-    global classLabel
-    firstStr = inputTree.keys()[0]
+def classify(inputTree,featLabels,testVec):
+    firstSides = list(inputTree.keys())
+    firstStr = firstSides[0]
     secondDict = inputTree[firstStr]
     featIndex = featLabels.index(firstStr)
-    for key in secondDict.keys():
-        if testVec[featIndex] == key:
-            if type(secondDict[key]).__name__ == 'dict':
-                classLabel = classify(secondDict[key], featLabels, testVec)
-            else:
-                classLabel = secondDict[key]
+    key = testVec[featIndex]
+    valueOfFeat = secondDict[key]
+    if isinstance(valueOfFeat, dict):
+        classLabel = classify(valueOfFeat, featLabels, testVec)
+    else: classLabel = valueOfFeat
     return classLabel
+def retrieveTree(i):
+    listOfTrees = [{'no surfacing': {0: 'no', 1: {'flippers': {0: 'no', 1: 'yes'}}}},
+                   {'no surfacing': {0: 'no', 1: {'flippers': {0: {'head': {0: 'no', 1: 'yes'}}, 1: 'no'}}}}
+                   ]
+    return listOfTrees[i]
 select = int(input("请输入你要选择的操作："))
 if select == 1:
     myDat, labels = createDataSet()
@@ -97,7 +101,13 @@ elif select == 5:
     myDat, labels = createDataSet()
     print(createTree(myDat, labels))
 elif select == 6:
-    myDat, labels = createDataSet()
+    labels = ['no surfacing', 'flippers']
     myTree = {'no surfacing': {0: 'no', 1: {'flippers': {0: 'no', 1: 'yes'}}}}
     print(classify(myTree, labels, [1,0]))
     print(classify(myTree, labels, [1,1]))
+else:
+    fr = open('lenses.txt')
+    lenses = [inst.strip().split('\t') for inst in fr.readlines()]
+    lensesLabels = ['age', 'prescript', 'astigmatic', 'tearRate']
+    lensesTree = createTree(lenses, lensesLabels)
+    print(lensesTree)
