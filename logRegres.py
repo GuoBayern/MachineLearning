@@ -21,7 +21,29 @@ def gradAscent(dataMatIn, classLabels):
     for k in range(maxCycles):  #计算真实类别与预测类别的差值
         h = sigmoid(dataMatrix * weights)
         error = (labelMat - h)
-        weights = weights + alpha * dataMatrix.transpose() * error
+        weights = weights + alpha * dataMatrix.transpose() * error  #transpose()不带参数时，对矩阵进行转置
+    return weights
+def stocGradAscent0(dataMatrix, classLabels):
+    m, n = np.shape(dataMatrix)
+    alpha = 0.01
+    weights = np.ones(n)
+    for i in range(m):
+        h = sigmoid(sum(dataMatrix[i] * weights))
+        error = classLabels[i] - h
+        weights = weights + alpha * error * dataMatrix[i]
+    return weights
+def stocGradAscent1(dataMatrix, classLabels, numIter = 150):
+    m, n = np.shape(dataMatrix)
+    weights = np.ones(n)
+    for j in range(numIter):
+        dataIndex = range(m)
+        for i in range(m):
+            alpha = 4 / (1.0 + j + i) + 0.01
+            randIndex = int(np.random.uniform(0, len(dataIndex)))
+            h = sigmoid(sum(dataMatrix[randIndex] * weights))
+            error = classLabels[randIndex] - h
+            weights = weights + alpha * error * dataMatrix[randIndex]
+            del(dataIndex[randIndex])
     return weights
 def plotBestFit(weights):
     dataMat, labelMat = loadDataSet()
@@ -56,3 +78,11 @@ elif select == 2:
     dataArr, labelMat = loadDataSet()
     weights = gradAscent(dataArr, labelMat)
     plotBestFit(weights.getA())
+elif select == 3:
+    dataArr, labelMat = loadDataSet()
+    weights = stocGradAscent0(np.array(dataArr), labelMat)
+    plotBestFit(weights)
+elif select == 4:
+    dataArr, labelMat = loadDataSet()
+    weights = stocGradAscent1(np.array(dataArr), labelMat)
+    plotBestFit(weights)
